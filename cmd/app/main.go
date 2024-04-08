@@ -14,7 +14,7 @@ import (
 
 func main() {
 	cfg := config.NewConfig("configs/config.yaml")
-	
+
 	pg, err := repository.NewPostgres(cfg.DB)
 	if err != nil {
 		return

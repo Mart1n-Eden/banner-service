@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"banner-service/internal/handler/model/request"
 	"banner-service/internal/handler/tools"
 	"banner-service/internal/service"
 	"database/sql"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
@@ -22,8 +24,8 @@ func (h *Handler) InitRoutes() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/user_banner", h.userBanner).Methods("GET")
-	r.HandleFunc("/banner", h.userBanner).Methods("GET")
-	r.HandleFunc("/banner", h.userBanner).Methods("POST")
+	//r.HandleFunc("/banner", h.userBanner).Methods("GET")
+	r.HandleFunc("/banner", h.postAdminBanner).Methods("POST")
 
 	return r
 }
@@ -58,12 +60,14 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 	if content, err := h.services.GetUserBanner(tagId, featureId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			tools.SendError(w, http.StatusNotFound, "banner not found")
+			return
 		} else {
 			// TODO: correct return InternalServerError
 			tools.SendError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
 	} else {
-		tools.SendSucsess(w, http.StatusOK, content)
+		tools.SendSucsessContent(w, http.StatusOK, content)
 	}
 }
 
@@ -104,13 +108,28 @@ func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
 	// TODO: continue
 
 }
+*/
 
 func (h *Handler) postAdminBanner(w http.ResponseWriter, r *http.Request) {
 	var ban request.PostBanner
 
 	if err := json.NewDecoder(r.Body).Decode(&ban); err != nil {
 		tools.SendError(w, http.StatusBadRequest, "incorrect data") //check
+		return
+	}
+
+	if bannerId, err := h.services.PostBanner(ban.FeatureId, ban.IsActive, ban.TagIds, ban.Content); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// TODO: correct return error message
+			tools.SendError(w, http.StatusBadRequest, err.Error())
+			return
+		} else {
+			// TODO: correct return InternalServerError
+			tools.SendError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	} else {
+		tools.SendSucsessId(w, http.StatusCreated, bannerId)
 	}
 
 }
-*/
