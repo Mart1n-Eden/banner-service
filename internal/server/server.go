@@ -13,9 +13,9 @@ func NewServer(h http.Handler, addr string) *Server {
 
 	s := &Server{
 		// конфигурация http сервера
-		httpServer : &http.Server{
-		Addr:    ":" + addr,
-		Handler: h,
+		httpServer: &http.Server{
+			Addr:    ":" + addr,
+			Handler: h,
 		},
 	}
 

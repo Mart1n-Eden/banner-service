@@ -31,7 +31,7 @@ type LoggerConfig struct {
 
 func NewConfig(path string) Config {
 	var cfg Config
-	
+
 	viper.SetConfigFile(path)
 
 	if err := viper.ReadInConfig(); err != nil {

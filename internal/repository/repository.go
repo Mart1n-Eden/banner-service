@@ -39,3 +39,14 @@ func (r *Repository) PostBanner(featureId uint64, isActive bool, tagIds []uint64
 
 	return bannerId, nil
 }
+
+func (r *Repository) DeleteBanner(bannerId uint64) error {
+
+	if _, err := r.db.Exec(query.DeleteBanner, bannerId); err != nil {
+		// TODO: error handling
+		return err
+	}
+
+	return nil
+
+}

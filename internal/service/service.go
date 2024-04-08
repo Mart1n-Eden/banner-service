@@ -32,3 +32,11 @@ func (s *Service) PostBanner(featureId uint64, isActive bool, tagIds []uint64, b
 
 	return bannerId, nil
 }
+
+func (s *Service) DeleteBanner(bannerId uint64) error {
+	if err := s.repository.DeleteBanner(bannerId); err != nil {
+		return err
+	}
+
+	return nil
+}

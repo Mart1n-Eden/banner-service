@@ -26,6 +26,7 @@ func (h *Handler) InitRoutes() http.Handler {
 	r.HandleFunc("/user_banner", h.userBanner).Methods("GET")
 	//r.HandleFunc("/banner", h.userBanner).Methods("GET")
 	r.HandleFunc("/banner", h.postAdminBanner).Methods("POST")
+	r.HandleFunc("/banner/{id}", h.DeleteBanner).Methods("DELETE")
 
 	return r
 }
@@ -132,4 +133,33 @@ func (h *Handler) postAdminBanner(w http.ResponseWriter, r *http.Request) {
 		tools.SendSucsessId(w, http.StatusCreated, bannerId)
 	}
 
+}
+
+func (h *Handler) DeleteBanner(w http.ResponseWriter, r *http.Request) {
+	var bannerId uint64
+	var err error
+
+	vars := mux.Vars(r)
+	if id, ok := vars["id"]; ok {
+		if bannerId, err = strconv.ParseUint(id, 10, 64); err != nil {
+			tools.SendError(w, http.StatusBadRequest, "id is not a number")
+			return
+		}
+	} else {
+		tools.SendError(w, http.StatusBadRequest, "id is empty")
+		return
+	}
+
+	if err := h.services.DeleteBanner(bannerId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			tools.SendError(w, http.StatusNotFound, "banner not found")
+			return
+		} else {
+			// TODO: correct return InternalServerError
+			tools.SendError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	} else {
+		tools.SendStatus(w, http.StatusNoContent)
+	}
 }

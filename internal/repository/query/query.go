@@ -15,6 +15,8 @@ const (
 
 	PostIdentifiers = `INSERT INTO banner_identifier (banner_id, feature_id, tag_id)
 			SELECT $1, $2, tag
-			FROM unnest($3::bigint[]) as tag
-`
+			FROM unnest($3::bigint[]) as tag`
+
+	DeleteBanner = `DELETE FROM banners
+			WHERE id = $1`
 )
