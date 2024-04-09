@@ -1,8 +1,8 @@
 package service
 
 import (
+	"banner-service/internal/handler/model/request"
 	"banner-service/internal/repository"
-	"encoding/json"
 	"fmt"
 )
 
@@ -25,8 +25,8 @@ func (s *Service) GetUserBanner(tag_id, feature_id uint64) (content string, err 
 
 //func (s *Service) GetAdminBanner()
 
-func (s *Service) PostBanner(featureId uint64, isActive bool, tagIds []uint64, body json.RawMessage) (bannerId uint64, err error) {
-	if bannerId, err = s.repository.PostBanner(featureId, isActive, tagIds, body); err != nil {
+func (s *Service) PostBanner(ban request.Banner) (bannerId uint64, err error) {
+	if bannerId, err = s.repository.PostBanner(ban); err != nil {
 		return 0, err
 	}
 
@@ -35,6 +35,14 @@ func (s *Service) PostBanner(featureId uint64, isActive bool, tagIds []uint64, b
 
 func (s *Service) DeleteBanner(bannerId uint64) error {
 	if err := s.repository.DeleteBanner(bannerId); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) PatchBanner(id uint64, ban request.Banner) error {
+	if err := s.repository.PatchBanner(id, ban); err != nil {
 		return err
 	}
 

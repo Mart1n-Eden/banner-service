@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -16,6 +17,7 @@ func NewServer(h http.Handler, addr string) *Server {
 		httpServer: &http.Server{
 			Addr:    ":" + addr,
 			Handler: h,
+			//
 		},
 	}
 
@@ -26,4 +28,8 @@ func NewServer(h http.Handler, addr string) *Server {
 func (s *Server) Run() {
 	// ...
 	s.httpServer.ListenAndServe()
+}
+
+func (s *Server) Shutdown(ctx context.Context) {
+	s.httpServer.Shutdown(ctx)
 }

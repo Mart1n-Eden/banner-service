@@ -19,4 +19,23 @@ const (
 
 	DeleteBanner = `DELETE FROM banners
 			WHERE id = $1`
+
+	PatchContent = `UPDATE banners
+			SET content = $1, updated_at = NOW()
+			WHERE id = $2`
+
+	PatchIsActive = `UPDATE banners
+			SET is_active = $1, updated_at = NOW()
+			WHERE id = $2`
+
+	PatchFeature = `UPDATE banner_identifier
+			SET feature_id = $1
+			WHERE banner_id = $2`
+
+	SelectFeature = `SELECT feature_id
+			FROM banner_identifier
+			WHERE banner_id = $1`
+
+	DeleteIdentifier = `DELETE FROM banner_identifier
+			WHERE banner_id = $1`
 )
