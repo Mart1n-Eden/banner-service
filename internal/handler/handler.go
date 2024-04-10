@@ -6,6 +6,7 @@ import (
 	"banner-service/internal/service"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
@@ -24,7 +25,7 @@ func (h *Handler) InitRoutes() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/user_banner", h.userBanner).Methods("GET")
-	//r.HandleFunc("/banner", h.userBanner).Methods("GET")
+	r.HandleFunc("/banner", h.getAdminBanner).Methods("GET")
 	r.HandleFunc("/banner", h.postAdminBanner).Methods("POST")
 	r.HandleFunc("/banner/{id}", h.deleteBanner).Methods("DELETE")
 	r.HandleFunc("/banner/{id}", h.patchBanner).Methods("PATCH")
@@ -73,44 +74,57 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
 func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
-	var tagId, featureId, limit, offset uint64
-	//var useLast bool
+	//tagId, featureId, limit, offset := new(uint64), new(uint64), new(uint64), new(uint64)
+	var tagId, featureId, limit, offset *uint64
 	var err error
+	fmt.Println(tagId, featureId, limit, offset)
 
 	if strTagId := r.URL.Query().Get("tag_id"); strTagId != "" {
-		if tagId, err = strconv.ParseUint(strTagId, 10, 64); err != nil {
+		tagId = new(uint64)
+		fmt.Println(tagId)
+		if *tagId, err = strconv.ParseUint(strTagId, 10, 64); err != nil {
 			tools.SendError(w, http.StatusBadRequest, "tag_id is not a number")
 			return
 		}
 	}
 
 	if strFeatureId := r.URL.Query().Get("feature_id"); strFeatureId != "" {
-		if featureId, err = strconv.ParseUint(strFeatureId, 10, 64); err != nil {
+		featureId = new(uint64)
+		if *featureId, err = strconv.ParseUint(strFeatureId, 10, 64); err != nil {
 			tools.SendError(w, http.StatusBadRequest, "feature_id is not a number")
 			return
 		}
 	}
 
 	if strLimit := r.URL.Query().Get("limit"); strLimit != "" {
-		if limit, err = strconv.ParseUint(strLimit, 10, 64); err != nil {
+		limit = new(uint64)
+		if *limit, err = strconv.ParseUint(strLimit, 10, 64); err != nil {
 			tools.SendError(w, http.StatusBadRequest, "limit is not a number")
 			return
 		}
 	}
 
 	if strOffset := r.URL.Query().Get("offset"); strOffset != "" {
-		if offset, err = strconv.ParseUint(strOffset, 10, 64); err != nil {
+		offset = new(uint64)
+		if *offset, err = strconv.ParseUint(strOffset, 10, 64); err != nil {
 			tools.SendError(w, http.StatusBadRequest, "offset is not a number")
 			return
 		}
 	}
 
-	// TODO: continue
-
+	if res, err := h.services.GetAdminBanner(tagId, featureId, limit, offset); err != nil {
+		tools.SendError(w, http.StatusBadRequest, err.Error()) // TODO:
+	} else {
+		switch {
+		case res != nil:
+			tools.SendSucsessArray(w, http.StatusOK, res)
+		case res == nil:
+			// TODO: return empty array for json
+			tools.SendSucsessArray(w, http.StatusOK, []byte{})
+		}
+	}
 }
-*/
 
 func (h *Handler) postAdminBanner(w http.ResponseWriter, r *http.Request) {
 	var ban request.Banner
@@ -173,11 +187,6 @@ func (h *Handler) patchBanner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println(ban)
-	//fmt.Println(string(*ban.Content))
-	//if ban.TagIds == nil {
-	//	fmt.Println("Nilnilnilnilinlilnilinllbtlbgvdfl")
-	//}
 	vars := mux.Vars(r)
 	if id, ok := vars["id"]; ok {
 		if bannerId, err := strconv.ParseUint(id, 10, 64); err != nil {

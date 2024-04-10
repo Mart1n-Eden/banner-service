@@ -2,6 +2,7 @@ package service
 
 import (
 	"banner-service/internal/handler/model/request"
+	"banner-service/internal/handler/model/response"
 	"banner-service/internal/repository"
 	"fmt"
 )
@@ -23,7 +24,13 @@ func (s *Service) GetUserBanner(tag_id, feature_id uint64) (content string, err 
 	return content, nil
 }
 
-//func (s *Service) GetAdminBanner()
+func (s *Service) GetAdminBanner(tag_id, featureId, limmit, offset *uint64) (res []response.Banner, err error) {
+	if res, err = s.repository.GetBanner(tag_id, featureId, limmit, offset); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
 
 func (s *Service) PostBanner(ban request.Banner) (bannerId uint64, err error) {
 	if bannerId, err = s.repository.PostBanner(ban); err != nil {

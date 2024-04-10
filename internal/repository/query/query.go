@@ -13,6 +13,19 @@ const (
 			VALUES ($1, $2)
 			RETURNING id`
 
+	GetAdminBanner = `WITH filter_banner AS (
+		   SELECT DISTINCT banner_id FROM banner_identifier
+		   WHERE (CASE WHEN $1::bigint IS NOT NULL THEN feature_id = $1 ELSE true END)
+				 and (CASE WHEN $2::bigint IS NOT NULL THEN tag_id = $2 ELSE true END)
+		  ), selected_banner AS (
+		   SELECT ftb.banner_id, ftb.feature_id, array_agg(ftb.tag_id)::bigint[] as tag_ids FROM banner_identifier as ftb
+		   INNER JOIN filter_banner ON (filter_banner.banner_id = ftb.banner_id)
+		   GROUP BY ftb.banner_id, ftb.feature_id
+		  )
+		  SELECT id, tag_ids, feature_id, content, is_active, created_at, updated_at FROM banners
+			  INNER JOIN selected_banner ON (selected_banner.banner_id = banners.id)
+		   LIMIT $3 OFFSET $4`
+
 	PostIdentifiers = `INSERT INTO banner_identifier (banner_id, feature_id, tag_id)
 			SELECT $1, $2, tag
 			FROM unnest($3::bigint[]) as tag`

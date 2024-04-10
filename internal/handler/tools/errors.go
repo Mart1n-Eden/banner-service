@@ -32,6 +32,13 @@ func SendSucsessContent(w http.ResponseWriter, code int, body string) {
 	w.Write([]byte(body))
 }
 
+func SendSucsessArray(w http.ResponseWriter, code int, arr interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(arr)
+	//w.Write([]byte(body))
+}
+
 func SendSucsessId(w http.ResponseWriter, code int, id uint64) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)

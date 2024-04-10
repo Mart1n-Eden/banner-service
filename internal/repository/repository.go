@@ -2,6 +2,7 @@ package repository
 
 import (
 	"banner-service/internal/handler/model/request"
+	"banner-service/internal/handler/model/response"
 	"banner-service/internal/repository/query"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -23,6 +24,23 @@ func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 	}
 
 	return content, nil
+}
+
+func (r *Repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error) {
+	var res []response.Banner
+	if rows, err := r.db.Queryx(query.GetAdminBanner, tag_id, featureId, limmit, offset); err != nil {
+		return nil, err
+	} else {
+		for rows.Next() {
+			var ban response.Banner
+			if err := rows.Scan(&ban.Id, pq.Array(&ban.TagsId), &ban.FeatureId, &ban.Content, &ban.IsActive, &ban.Created, &ban.Updated); err != nil {
+				return nil, err
+			}
+			res = append(res, ban)
+		}
+	}
+
+	return res, nil
 }
 
 func (r *Repository) PostBanner(ban request.Banner) (uint64, error) {
@@ -52,6 +70,7 @@ func (r *Repository) DeleteBanner(bannerId uint64) error {
 
 }
 
+// TODO: implemetation with transaction
 func (r *Repository) PatchBanner(id uint64, ban request.Banner) error {
 	fmt.Println("norm?")
 
