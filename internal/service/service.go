@@ -1,6 +1,7 @@
 package service
 
 import (
+	"banner-service/internal/cache"
 	"banner-service/internal/handler/model/request"
 	"banner-service/internal/handler/model/response"
 	"banner-service/internal/repository"
@@ -9,16 +10,36 @@ import (
 
 type Service struct {
 	repository *repository.Repository
+	cache      *cache.Cache
 }
 
-func NewService(repo *repository.Repository) *Service {
-	return &Service{repository: repo}
+func NewService(repo *repository.Repository, c *cache.Cache) *Service {
+	return &Service{repository: repo, cache: c}
 }
 
-func (s *Service) GetUserBanner(tag_id, feature_id uint64) (content string, err error) {
-	if content, err = s.repository.GetUserBanner(tag_id, feature_id); err != nil {
-		fmt.Println(err.Error())
+func (s *Service) GetUserBanner(tagId, featureId uint64, useLast bool) (content string, err error) {
+	key := fmt.Sprintf("%d_%d", tagId, featureId)
+
+	if !useLast {
+		fmt.Println("start")
+		if content, err = s.cache.Get(key); err != nil {
+			if err.Error() == "not exist" {
+			} else {
+				return "", err
+			}
+		} else {
+			fmt.Println("end")
+			return content, nil
+		}
+	}
+
+	if content, err = s.repository.GetUserBanner(tagId, featureId); err != nil {
 		return "", err
+	}
+
+	if !s.cache.Exist(key) {
+		// TODO: error handling
+		s.cache.Set(key, content)
 	}
 
 	return content, nil

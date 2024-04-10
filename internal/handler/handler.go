@@ -35,7 +35,7 @@ func (h *Handler) InitRoutes() http.Handler {
 
 func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 	var tagId, featureId uint64
-	//var useLast bool
+	var useLast bool
 	var err error
 
 	if strTagId := r.URL.Query().Get("tag_id"); strTagId == "" {
@@ -54,13 +54,20 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strUseLast := r.URL.Query().Get("use_last_revision"); strUseLast != "" {
+		if useLast, err = strconv.ParseBool(strUseLast); err != nil {
+			tools.SendError(w, http.StatusBadRequest, "use_last_revision is not a boolean")
+			return
+		}
+	}
+
 	// TODO: use_last_version realisation
 
 	// TODO: check token
 
 	// TODO: take banner from cache
 
-	if content, err := h.services.GetUserBanner(tagId, featureId); err != nil {
+	if content, err := h.services.GetUserBanner(tagId, featureId, useLast); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			tools.SendError(w, http.StatusNotFound, "banner not found")
 			return
@@ -75,7 +82,6 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
-	//tagId, featureId, limit, offset := new(uint64), new(uint64), new(uint64), new(uint64)
 	var tagId, featureId, limit, offset *uint64
 	var err error
 	fmt.Println(tagId, featureId, limit, offset)
