@@ -1,12 +1,13 @@
 package middleware
 
 import (
+	"banner-service/internal/handler/tools"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"time"
 )
 
-var jwtKey = []byte("your-secret-key")
+var jwtKey = []byte("secret-key")
 
 type Claims struct {
 	Role string `json:"role"`
@@ -26,7 +27,7 @@ func TokenGen(next http.Handler) http.Handler {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString(jwtKey)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			tools.SendError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -40,7 +41,8 @@ func WithUserAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 		tokenString := authHeader[len("Bearer "):]
@@ -49,13 +51,15 @@ func WithUserAuth(next http.Handler) http.Handler {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 
 		claims, ok := token.Claims.(*Claims)
 		if !ok || (claims.Role != "user_token" && claims.Role != "admin_token") {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			//http.Error(w, "Forbidden", http.StatusForbidden)
+			tools.SendStatus(w, http.StatusForbidden)
 			return
 		}
 
@@ -67,7 +71,8 @@ func WithAdminAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 		tokenString := authHeader[len("Bearer "):]
@@ -76,13 +81,15 @@ func WithAdminAuth(next http.Handler) http.Handler {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 
 		claims, ok := token.Claims.(*Claims)
 		if !ok || claims.Role != "admin_token" {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			//http.Error(w, "Forbidden", http.StatusForbidden)
+			tools.SendStatus(w, http.StatusForbidden)
 			return
 		}
 

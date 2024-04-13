@@ -39,8 +39,6 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: check token
-
 	if content, err := h.services.GetUserBanner(tagId, featureId, useLast); err != nil {
 		if errors.Is(err, sql.ErrNoRows) || content == "" {
 			tools.SendError(w, http.StatusNotFound, "banner not found")
