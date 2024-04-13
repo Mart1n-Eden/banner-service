@@ -9,6 +9,7 @@ type Config struct {
 	Server ServerConfig
 	DB     DBConfig
 	Logger LoggerConfig
+	Redis  RedisConfig
 }
 
 type ServerConfig struct {
@@ -27,6 +28,10 @@ type DBConfig struct {
 
 type LoggerConfig struct {
 	File string
+}
+
+type RedisConfig struct {
+	URL string
 }
 
 func NewConfig(path string) Config {

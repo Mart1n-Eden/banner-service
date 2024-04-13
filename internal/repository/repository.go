@@ -4,7 +4,6 @@ import (
 	"banner-service/internal/handler/model/request"
 	"banner-service/internal/handler/model/response"
 	"banner-service/internal/repository/query"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 )
@@ -19,8 +18,13 @@ func NewRepository(conn *sqlx.DB) *Repository {
 
 func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 	var content string
-	if err := r.db.Get(&content, query.GetBanner, tagId, featureId); err != nil {
+	var isActive bool
+	if err := r.db.QueryRow(query.GetBanner, tagId, featureId).Scan(&content, &isActive); err != nil {
 		return "", err
+	}
+
+	if !isActive {
+		return "", nil
 	}
 
 	return content, nil
@@ -28,8 +32,6 @@ func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 
 func (r *Repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error) {
 	var res []response.Banner
-
-	fmt.Println(tag_id, featureId, limmit, offset)
 
 	if rows, err := r.db.Queryx(query.GetAdminBanner, tag_id, featureId, limmit, offset); err != nil {
 		return nil, err

@@ -1,15 +1,14 @@
 package cache
 
 import (
+	"banner-service/internal/config"
 	"github.com/go-redis/redis"
 )
 
-// TODO: url from config
-func NewRedis() (*redis.Client, error) {
+func NewRedis(cfg config.RedisConfig) (*redis.Client, error) {
 	client := redis.NewClient(
 		&redis.Options{
-			Addr: "redis:6379",
-			//Addr:     "localhost:6379",
+			Addr:     cfg.URL,
 			Password: "",
 			DB:       0,
 		})

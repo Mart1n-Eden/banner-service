@@ -1,29 +1,88 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
+	"time"
 )
 
 var jwtKey = []byte("your-secret-key")
 
-func WithAuth(next http.Handler) http.Handler {
+type Claims struct {
+	Role string `json:"role"`
+	jwt.StandardClaims
+}
+
+func TokenGen(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get("Authorization")
-		if tokenString == "" {
-			http.Error(w, "Unauthorized1", http.StatusUnauthorized)
+		expirationTime := time.Now().Add(5 * time.Minute)
+		claims := &Claims{
+			Role: r.Header.Get("token"),
+			StandardClaims: jwt.StandardClaims{
+				ExpiresAt: expirationTime.Unix(),
+				IssuedAt:  time.Now().Unix(),
+			},
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenString, err := token.SignedString(jwtKey)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method")
-			}
+		r.Header.Set("Authorization", "Bearer "+tokenString)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func WithUserAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		tokenString := authHeader[len("Bearer "):]
+
+		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		claims, ok := token.Claims.(*Claims)
+		if !ok || (claims.Role != "user_token" && claims.Role != "admin_token") {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func WithAdminAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		tokenString := authHeader[len("Bearer "):]
+
+		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+		})
+		if err != nil || !token.Valid {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		claims, ok := token.Claims.(*Claims)
+		if !ok || claims.Role != "admin_token" {
+			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 

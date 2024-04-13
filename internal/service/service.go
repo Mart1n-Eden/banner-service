@@ -21,14 +21,12 @@ func (s *Service) GetUserBanner(tagId, featureId uint64, useLast bool) (content 
 	key := fmt.Sprintf("%d_%d", tagId, featureId)
 
 	if !useLast {
-		fmt.Println("start")
 		if content, err = s.cache.Get(key); err != nil {
 			if err.Error() == "not exist" {
 			} else {
 				return "", err
 			}
 		} else {
-			fmt.Println("end")
 			return content, nil
 		}
 	}

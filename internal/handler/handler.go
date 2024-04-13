@@ -3,38 +3,13 @@ package handler
 import (
 	"banner-service/internal/handler/model/request"
 	"banner-service/internal/handler/tools"
-	"banner-service/internal/service"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 )
-
-type Handler struct {
-	services *service.Service
-}
-
-func NewHandler(s *service.Service) *Handler {
-	return &Handler{services: s}
-}
-
-func (h *Handler) InitRoutes() http.Handler {
-	r := mux.NewRouter()
-
-	r.HandleFunc("/user_banner", h.userBanner).Methods("GET")
-	r.HandleFunc("/banner", h.getAdminBanner).Methods("GET")
-	r.HandleFunc("/banner", h.postAdminBanner).Methods("POST")
-	r.HandleFunc("/banner/{id}", h.deleteBanner).Methods("DELETE")
-	r.HandleFunc("/banner/{id}", h.patchBanner).Methods("PATCH")
-
-	// TODO: check auth with middleware
-	//r.Use(middleware.WithAuth)
-
-	return r
-}
 
 func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 	var tagId, featureId uint64
@@ -66,10 +41,8 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: check token
 
-	// TODO: take banner from cache
-
 	if content, err := h.services.GetUserBanner(tagId, featureId, useLast); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) || content == "" {
 			tools.SendError(w, http.StatusNotFound, "banner not found")
 			return
 		} else {
@@ -117,8 +90,6 @@ func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	fmt.Println("hand\n", tagId, featureId, limit, offset)
 
 	if res, err := h.services.GetAdminBanner(tagId, featureId, limit, offset); err != nil {
 		tools.SendError(w, http.StatusBadRequest, err.Error()) // TODO:
