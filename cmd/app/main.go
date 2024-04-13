@@ -25,6 +25,8 @@ func main() {
 
 	pg, err := repository.NewPostgres(cfg.DB)
 	if err != nil {
+		fmt.Println("error conection db")
+		fmt.Println(err.Error())
 		return
 		// TODO: логирование
 	}
@@ -33,6 +35,7 @@ func main() {
 	red, err := cache.NewRedis()
 	if err != nil {
 		fmt.Println(err.Error())
+		fmt.Println("error conection red")
 		return
 		// TODO: логирование
 	}

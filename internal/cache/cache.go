@@ -1,8 +1,7 @@
 package cache
 
 import (
-	"context"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -16,9 +15,8 @@ func NewCache(con *redis.Client) *Cache {
 }
 
 func (c *Cache) Set(key string, content string) error {
-	ctx := context.Background()
 
-	if err := c.rdb.Set(ctx, key, content, time.Minute*5); err != nil {
+	if err := c.rdb.Set(key, content, time.Minute*5); err != nil {
 		return err.Err()
 	}
 
@@ -26,9 +24,8 @@ func (c *Cache) Set(key string, content string) error {
 }
 
 func (c *Cache) Get(key string) (content string, err error) {
-	ctx := context.Background()
 
-	if content, err = c.rdb.Get(ctx, key).Result(); err != nil {
+	if content, err = c.rdb.Get(key).Result(); err != nil {
 		if err == redis.Nil {
 			return "", errors.New("not exist")
 		}
@@ -39,9 +36,8 @@ func (c *Cache) Get(key string) (content string, err error) {
 }
 
 func (c *Cache) Exist(key string) bool {
-	ctx := context.Background()
 
-	exists, err := c.rdb.Exists(ctx, key).Result()
+	exists, err := c.rdb.Exists(key).Result()
 	if err != nil {
 		return true
 	}

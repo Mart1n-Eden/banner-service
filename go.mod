@@ -3,6 +3,8 @@ module banner-service
 go 1.21
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/mux v1.8.1
 	github.com/jmoiron/sqlx v1.3.5

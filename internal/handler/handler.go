@@ -30,6 +30,9 @@ func (h *Handler) InitRoutes() http.Handler {
 	r.HandleFunc("/banner/{id}", h.deleteBanner).Methods("DELETE")
 	r.HandleFunc("/banner/{id}", h.patchBanner).Methods("PATCH")
 
+	// TODO: check auth with middleware
+	//r.Use(middleware.WithAuth)
+
 	return r
 }
 
@@ -61,8 +64,6 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: use_last_version realisation
-
 	// TODO: check token
 
 	// TODO: take banner from cache
@@ -84,11 +85,9 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
 	var tagId, featureId, limit, offset *uint64
 	var err error
-	fmt.Println(tagId, featureId, limit, offset)
 
 	if strTagId := r.URL.Query().Get("tag_id"); strTagId != "" {
 		tagId = new(uint64)
-		fmt.Println(tagId)
 		if *tagId, err = strconv.ParseUint(strTagId, 10, 64); err != nil {
 			tools.SendError(w, http.StatusBadRequest, "tag_id is not a number")
 			return
@@ -118,6 +117,8 @@ func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	fmt.Println("hand\n", tagId, featureId, limit, offset)
 
 	if res, err := h.services.GetAdminBanner(tagId, featureId, limit, offset); err != nil {
 		tools.SendError(w, http.StatusBadRequest, err.Error()) // TODO:

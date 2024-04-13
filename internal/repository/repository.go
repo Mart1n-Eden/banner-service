@@ -28,6 +28,9 @@ func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 
 func (r *Repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error) {
 	var res []response.Banner
+
+	fmt.Println(tag_id, featureId, limmit, offset)
+
 	if rows, err := r.db.Queryx(query.GetAdminBanner, tag_id, featureId, limmit, offset); err != nil {
 		return nil, err
 	} else {
@@ -72,7 +75,6 @@ func (r *Repository) DeleteBanner(bannerId uint64) error {
 
 // TODO: implemetation with transaction
 func (r *Repository) PatchBanner(id uint64, ban request.Banner) error {
-	fmt.Println("norm?")
 
 	if ban.Content != nil {
 		if _, err := r.db.Exec(query.PatchContent, *ban.Content, id); err != nil {
