@@ -18,11 +18,11 @@ func NewHandler(s *service.Service) *Handler {
 func (h *Handler) InitRoutes() http.Handler {
 	r := mux.NewRouter()
 
-	r.Handle("/user_banner", middleware.WithUserAuth(http.HandlerFunc(h.userBanner))).Methods("GET")
-	r.Handle("/banner", middleware.WithAdminAuth(http.HandlerFunc(h.getAdminBanner))).Methods("GET")
-	r.Handle("/banner", middleware.WithAdminAuth(http.HandlerFunc(h.postAdminBanner))).Methods("POST")
-	r.Handle("/banner/{id}", middleware.WithAdminAuth(http.HandlerFunc(h.deleteBanner))).Methods("DELETE")
-	r.Handle("/banner/{id}", middleware.WithAdminAuth(http.HandlerFunc(h.patchBanner))).Methods("PATCH")
+	r.Handle("/user_banner", middleware.WithUserAuth(http.HandlerFunc(h.UserBanner))).Methods("GET")
+	r.Handle("/banner", middleware.WithAdminAuth(http.HandlerFunc(h.GetAdminBanner))).Methods("GET")
+	r.Handle("/banner", middleware.WithAdminAuth(http.HandlerFunc(h.PostAdminBanner))).Methods("POST")
+	r.Handle("/banner/{id}", middleware.WithAdminAuth(http.HandlerFunc(h.DeleteBanner))).Methods("DELETE")
+	r.Handle("/banner/{id}", middleware.WithAdminAuth(http.HandlerFunc(h.PatchBanner))).Methods("PATCH")
 
 	r.Use(middleware.TokenGen)
 

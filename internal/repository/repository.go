@@ -21,6 +21,7 @@ func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 	var content string
 	var isActive bool
 	if err := r.db.QueryRow(query.GetBanner, tagId, featureId).Scan(&content, &isActive); err != nil {
+		fmt.Println(err.Error())
 		return "", err
 	}
 

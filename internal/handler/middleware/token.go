@@ -41,7 +41,6 @@ func WithUserAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
@@ -51,14 +50,12 @@ func WithUserAuth(next http.Handler) http.Handler {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 
 		claims, ok := token.Claims.(*Claims)
 		if !ok || (claims.Role != "user_token" && claims.Role != "admin_token") {
-			//http.Error(w, "Forbidden", http.StatusForbidden)
 			tools.SendStatus(w, http.StatusForbidden)
 			return
 		}
@@ -71,7 +68,6 @@ func WithAdminAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
@@ -81,14 +77,12 @@ func WithAdminAuth(next http.Handler) http.Handler {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			//http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			tools.SendStatus(w, http.StatusUnauthorized)
 			return
 		}
 
 		claims, ok := token.Claims.(*Claims)
 		if !ok || claims.Role != "admin_token" {
-			//http.Error(w, "Forbidden", http.StatusForbidden)
 			tools.SendStatus(w, http.StatusForbidden)
 			return
 		}

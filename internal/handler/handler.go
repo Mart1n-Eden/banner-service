@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UserBanner(w http.ResponseWriter, r *http.Request) {
 	var tagId, featureId uint64
 	var useLast bool
 	var err error
@@ -53,7 +53,7 @@ func (h *Handler) userBanner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAdminBanner(w http.ResponseWriter, r *http.Request) {
 	var tagId, featureId, limit, offset *uint64
 	var err error
 
@@ -102,7 +102,7 @@ func (h *Handler) getAdminBanner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) postAdminBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PostAdminBanner(w http.ResponseWriter, r *http.Request) {
 	var ban request.Banner
 
 	if err := json.NewDecoder(r.Body).Decode(&ban); err != nil {
@@ -126,7 +126,7 @@ func (h *Handler) postAdminBanner(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) deleteBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteBanner(w http.ResponseWriter, r *http.Request) {
 	var bannerId uint64
 	var err error
 
@@ -155,7 +155,7 @@ func (h *Handler) deleteBanner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) patchBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PatchBanner(w http.ResponseWriter, r *http.Request) {
 	var ban request.Banner
 
 	if err := json.NewDecoder(r.Body).Decode(&ban); err != nil {
