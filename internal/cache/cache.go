@@ -6,15 +6,21 @@ import (
 	"time"
 )
 
-type Cache struct {
+type cache struct {
 	rdb *redis.Client
 }
 
-func NewCache(con *redis.Client) *Cache {
-	return &Cache{rdb: con}
+type Cache interface {
+	Set(key string, content string) error
+	Get(key string) (content string, err error)
+	Exist(key string) bool
 }
 
-func (c *Cache) Set(key string, content string) error {
+func NewCache(con *redis.Client) Cache {
+	return &cache{rdb: con}
+}
+
+func (c *cache) Set(key string, content string) error {
 
 	if err := c.rdb.Set(key, content, time.Minute*5); err != nil {
 		return err.Err()
@@ -23,7 +29,7 @@ func (c *Cache) Set(key string, content string) error {
 	return nil
 }
 
-func (c *Cache) Get(key string) (content string, err error) {
+func (c *cache) Get(key string) (content string, err error) {
 
 	if content, err = c.rdb.Get(key).Result(); err != nil {
 		if err == redis.Nil {
@@ -35,7 +41,7 @@ func (c *Cache) Get(key string) (content string, err error) {
 	return content, nil
 }
 
-func (c *Cache) Exist(key string) bool {
+func (c *cache) Exist(key string) bool {
 
 	exists, err := c.rdb.Exists(key).Result()
 	if err != nil {

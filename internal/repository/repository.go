@@ -9,15 +9,23 @@ import (
 	"github.com/lib/pq"
 )
 
-type Repository struct {
+type Repository interface {
+	GetUserBanner(tagId, featureId uint64) (string, error)
+	GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error)
+	PostBanner(ban request.Banner) (uint64, error)
+	DeleteBanner(bannerId uint64) error
+	PatchBanner(id uint64, ban request.Banner) error
+}
+
+type repository struct {
 	db *sqlx.DB
 }
 
-func NewRepository(conn *sqlx.DB) *Repository {
-	return &Repository{db: conn}
+func NewRepository(conn *sqlx.DB) Repository {
+	return &repository{db: conn}
 }
 
-func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
+func (r *repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 	var content string
 	var isActive bool
 	if err := r.db.QueryRow(query.GetBanner, tagId, featureId).Scan(&content, &isActive); err != nil {
@@ -32,7 +40,7 @@ func (r *Repository) GetUserBanner(tagId, featureId uint64) (string, error) {
 	return content, nil
 }
 
-func (r *Repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error) {
+func (r *repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error) {
 	var res []response.Banner
 
 	if rows, err := r.db.Queryx(query.GetAdminBanner, tag_id, featureId, limmit, offset); err != nil {
@@ -50,7 +58,7 @@ func (r *Repository) GetBanner(tag_id, featureId, limmit, offset *uint64) ([]res
 	return res, nil
 }
 
-func (r *Repository) PostBanner(ban request.Banner) (uint64, error) {
+func (r *repository) PostBanner(ban request.Banner) (uint64, error) {
 	var bannerId uint64
 
 	if err := r.db.QueryRow(query.PostBanner, *ban.Content, *ban.IsActive).Scan(&bannerId); err != nil {
@@ -66,7 +74,7 @@ func (r *Repository) PostBanner(ban request.Banner) (uint64, error) {
 	return bannerId, nil
 }
 
-func (r *Repository) DeleteBanner(bannerId uint64) error {
+func (r *repository) DeleteBanner(bannerId uint64) error {
 
 	if _, err := r.db.Exec(query.DeleteBanner, bannerId); err != nil {
 		// TODO: error handling
@@ -78,7 +86,7 @@ func (r *Repository) DeleteBanner(bannerId uint64) error {
 }
 
 // TODO: implemetation with transaction
-// func (r *Repository) PatchBanner(id uint64, ban request.Banner) error {
+// func (r *repository) PatchBanner(id uint64, ban request.Banner) error {
 //
 //		if ban.Content != nil {
 //			if _, err := r.db.Exec(query.PatchContent, *ban.Content, id); err != nil {
@@ -133,7 +141,7 @@ func (r *Repository) DeleteBanner(bannerId uint64) error {
 //
 //		return nil
 //	}
-func (r *Repository) PatchBanner(id uint64, ban request.Banner) error {
+func (r *repository) PatchBanner(id uint64, ban request.Banner) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err

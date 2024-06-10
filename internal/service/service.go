@@ -1,23 +1,43 @@
 package service
 
 import (
-	"banner-service/internal/cache"
 	"banner-service/internal/handler/model/request"
 	"banner-service/internal/handler/model/response"
-	"banner-service/internal/repository"
 	"fmt"
 )
 
-type Service struct {
-	repository *repository.Repository
-	cache      *cache.Cache
+type Service interface {
+	GetUserBanner(tagId, featureId uint64, useLast bool) (content string, err error)
+	GetAdminBanner(tag_id, featureId, limmit, offset *uint64) (res []response.Banner, err error)
+	PostBanner(ban request.Banner) (bannerId uint64, err error)
+	DeleteBanner(bannerId uint64) error
+	PatchBanner(id uint64, ban request.Banner) error
 }
 
-func NewService(repo *repository.Repository, c *cache.Cache) *Service {
-	return &Service{repository: repo, cache: c}
+type Repository interface {
+	GetUserBanner(tagId, featureId uint64) (string, error)
+	GetBanner(tag_id, featureId, limmit, offset *uint64) ([]response.Banner, error)
+	PostBanner(ban request.Banner) (uint64, error)
+	DeleteBanner(bannerId uint64) error
+	PatchBanner(id uint64, ban request.Banner) error
 }
 
-func (s *Service) GetUserBanner(tagId, featureId uint64, useLast bool) (content string, err error) {
+type Cache interface {
+	Set(key string, content string) error
+	Get(key string) (content string, err error)
+	Exist(key string) bool
+}
+
+type service struct {
+	repository Repository
+	cache      Cache
+}
+
+func NewService(repo Repository, c Cache) Service {
+	return &service{repository: repo, cache: c}
+}
+
+func (s *service) GetUserBanner(tagId, featureId uint64, useLast bool) (content string, err error) {
 	key := fmt.Sprintf("%d_%d", tagId, featureId)
 
 	if !useLast {
@@ -43,7 +63,7 @@ func (s *Service) GetUserBanner(tagId, featureId uint64, useLast bool) (content 
 	return content, nil
 }
 
-func (s *Service) GetAdminBanner(tag_id, featureId, limmit, offset *uint64) (res []response.Banner, err error) {
+func (s *service) GetAdminBanner(tag_id, featureId, limmit, offset *uint64) (res []response.Banner, err error) {
 	if res, err = s.repository.GetBanner(tag_id, featureId, limmit, offset); err != nil {
 		return nil, err
 	}
@@ -51,7 +71,7 @@ func (s *Service) GetAdminBanner(tag_id, featureId, limmit, offset *uint64) (res
 	return res, nil
 }
 
-func (s *Service) PostBanner(ban request.Banner) (bannerId uint64, err error) {
+func (s *service) PostBanner(ban request.Banner) (bannerId uint64, err error) {
 	if bannerId, err = s.repository.PostBanner(ban); err != nil {
 		return 0, err
 	}
@@ -59,7 +79,7 @@ func (s *Service) PostBanner(ban request.Banner) (bannerId uint64, err error) {
 	return bannerId, nil
 }
 
-func (s *Service) DeleteBanner(bannerId uint64) error {
+func (s *service) DeleteBanner(bannerId uint64) error {
 	if err := s.repository.DeleteBanner(bannerId); err != nil {
 		return err
 	}
@@ -67,7 +87,7 @@ func (s *Service) DeleteBanner(bannerId uint64) error {
 	return nil
 }
 
-func (s *Service) PatchBanner(id uint64, ban request.Banner) error {
+func (s *service) PatchBanner(id uint64, ban request.Banner) error {
 	if err := s.repository.PatchBanner(id, ban); err != nil {
 		return err
 	}

@@ -102,7 +102,7 @@ func (h *Handler) GetAdminBanner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) PostAdminBanner(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PostBanner(w http.ResponseWriter, r *http.Request) {
 	var ban request.Banner
 
 	if err := json.NewDecoder(r.Body).Decode(&ban); err != nil {
